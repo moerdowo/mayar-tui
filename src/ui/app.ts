@@ -172,7 +172,7 @@ export class MayarApp {
 
     // ── header ─────────────────────────────────────────────
     const headerBox = new BoxRenderable(ctx, {
-      height: 11,
+      height: 12,
       flexDirection: "row",
       padding: 1,
       gap: 2,
@@ -234,6 +234,7 @@ export class MayarApp {
       fg: t.background,
       bg: t.fg,
       marginTop: 1,
+      marginBottom: 1,
     });
     const balanceBig = new ASCIIFontRenderable(ctx, {
       text: this.balanceBigText(),

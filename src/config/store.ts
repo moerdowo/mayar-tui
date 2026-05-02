@@ -2,6 +2,8 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 
+import { DEFAULT_PAGE_SIZE } from "../api/client.js";
+
 export interface AppConfig {
   apiKey: string;
   env: "production" | "sandbox";
@@ -17,7 +19,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   themeId: "matrix",
   spinnerId: "dots",
   animationsEnabled: true,
-  pageSize: 20,
+  pageSize: DEFAULT_PAGE_SIZE,
 };
 
 export function getConfigPath(): string {

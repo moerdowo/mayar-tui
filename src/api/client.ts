@@ -24,8 +24,21 @@ export interface PageQuery {
   pageSize?: number;
 }
 
+export const DEFAULT_PAGE_SIZE = 20;
+
 const PROD_BASE = "https://api.mayar.id/hl/v1";
 const SANDBOX_BASE = "https://api.mayar.club/hl/v1";
+
+// Mayar endpoints aren't perfectly consistent — most accept `pageSize`
+// (camelCase), but the product endpoint historically expects `page_size`
+// (snake_case). Send both so the request honors our intent regardless.
+function paging(q: PageQuery): Record<string, string | number | undefined> {
+  return {
+    page: q.page ?? 1,
+    pageSize: q.pageSize ?? DEFAULT_PAGE_SIZE,
+    page_size: q.pageSize ?? DEFAULT_PAGE_SIZE,
+  };
+}
 
 export class MayarApiError extends Error {
   status: number;
@@ -117,50 +130,38 @@ export class MayarClient {
 
   paidTransactions(q: PageQuery = {}) {
     return this.request<TransactionData[]>("GET", "/transactions", {
-      query: { page: q.page ?? 1, pageSize: q.pageSize ?? 20 },
+      query: paging(q),
     });
   }
 
   unpaidTransactions(q: PageQuery = {}) {
     return this.request<TransactionData[]>("GET", "/transactions/unpaid", {
-      query: { page: q.page ?? 1, pageSize: q.pageSize ?? 20 },
+      query: paging(q),
     });
   }
 
   products(q: PageQuery & { type?: string; search?: string } = {}) {
     const path = q.type ? `/product/type/${encodeURIComponent(q.type)}` : "/product";
     return this.request<ProductData[]>("GET", path, {
-      query: {
-        page: q.page ?? 1,
-        pageSize: q.pageSize ?? 20,
-        search: q.search,
-      },
+      query: { ...paging(q), search: q.search },
     });
   }
 
   customers(q: PageQuery = {}) {
     return this.request<CustomerData[]>("GET", "/customer", {
-      query: { page: q.page ?? 1, pageSize: q.pageSize ?? 20 },
+      query: paging(q),
     });
   }
 
   invoices(q: PageQuery & { sort?: string } = {}) {
     return this.request<InvoiceData[]>("GET", "/invoice", {
-      query: {
-        page: q.page ?? 1,
-        pageSize: q.pageSize ?? 20,
-        sort: q.sort,
-      },
+      query: { ...paging(q), sort: q.sort },
     });
   }
 
   singlePayments(q: PageQuery & { sort?: string } = {}) {
     return this.request<PaymentData[]>("GET", "/payment", {
-      query: {
-        page: q.page ?? 1,
-        pageSize: q.pageSize ?? 20,
-        sort: q.sort,
-      },
+      query: { ...paging(q), sort: q.sort },
     });
   }
 }
