@@ -1,15 +1,18 @@
-# mayar-tui
+# mayartui
 
 A terminal UI dashboard for the [Mayar.id](https://mayar.id) headless API.
 Built with [OpenTUI](https://opentui.com) on Bun, written in TypeScript.
 
 ```
-┌── mayar-tui ──────────────────────────────────────────────────┐
-│ ███╗   ███╗ █████╗ ██╗   ██╗ █████╗ ██████╗      BALANCE      │
-│ ████╗ ████║██╔══██╗╚██╗ ██╔╝██╔══██╗██╔══██╗    Rp 12.345.678 │
-│ ██╔████╔██║███████║ ╚████╔╝ ███████║██████╔╝                  │
+┌── mayartui ───────────────────────────────────────────────────┐
+│ Sat, 2 May 2026  ·  14:30:45  ●                               │
+│                                                               │
+│ ███╗   ███╗ █████╗ ██╗   ██╗ █████╗ ██████╗     BALANCE       │
+│ ████╗ ████║██╔══██╗╚██╗ ██╔╝██╔══██╗██╔══██╗                  │
+│ ██╔████╔██║███████║ ╚████╔╝ ███████║██████╔╝    Rp 12.345.678 │
 │ ██║╚██╔╝██║██╔══██║  ╚██╔╝  ██╔══██║██╔══██╗                  │
-└─────────────────────────────────────────────── production ────┘
+│ ╚═╝     ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝   active … pending│
+└────────────────────────────────────────────────── production ─┘
 ┌── menu ──────┐┌── list ──────────────────────┐┌── detail ────┐
 │ 1 Tx Paid   ││ Andi Setiawan      Rp 250 000 ││ ID 8af33…    │
 │ 2 Tx Unpaid ││ Putri Hidayat      Rp 480 000 ││ STATUS       │
@@ -24,35 +27,53 @@ Built with [OpenTUI](https://opentui.com) on Bun, written in TypeScript.
 ## Features
 
 - Three-column layout — menu / list / detail.
-- Live balance in the top-right corner.
+- Live clock with blinking indicator and a chunky ASCII balance widget
+  in the header.
 - Resources: paid transactions, unpaid transactions, invoices, single
   payments, products, customers.
-- Theme switcher: Matrix, Tokyo Night, Goblin Mode, Dracula, Synthwave,
-  Nord, Rosé Pine.
+- Theme switcher: Matrix, **Mayar** (brand light theme), Tokyo Night,
+  Goblin Mode, Dracula, Synthwave, Nord, Rosé Pine.
 - Configurable loading spinner (dots, line, arrow, pulse, matrix, bounce)
   with a global "animations off" toggle.
 - Production / Sandbox environment toggle.
-- Persists configuration to `~/.config/mayar-tui/config.json`
+- Persists configuration to `~/.config/mayartui/config.json`
   (mode `0600`).
 - API key can be supplied via `MAYAR_API_KEY` environment variable to
   override the saved value.
 
 ## Requirements
 
-- [Bun](https://bun.sh) ≥ 1.1 — OpenTUI's native renderer is currently
-  Bun-exclusive. (Node.js / Deno support is in progress upstream.)
+**Bun ≥ 1.1 is required at runtime.** OpenTUI's native renderer ships
+Bun-only FFI bindings (Node.js / Deno support is in progress upstream),
+so `mayartui` runs on Bun even when installed through `npm`.
+
+Install Bun once if you don't already have it:
+
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
 
 ## Install
 
+Install globally from npm:
+
 ```bash
-bun add -g mayar-tui   # once published
-mayar-tui
+npm install -g mayartui
+mayartui
+```
+
+Or one-off via `npx` / `bunx`:
+
+```bash
+npx mayartui
+# or
+bunx mayartui
 ```
 
 Or run from source:
 
 ```bash
-git clone <this-repo> mayar-tui
+git clone https://github.com/moerdowo/mayar-tui.git
 cd mayar-tui
 bun install
 bun run start
@@ -62,7 +83,7 @@ bun run start
 
 On first launch you'll see a setup card asking for your API key. Generate
 one at <https://web.mayar.id/api-keys>. The key is stored at
-`~/.config/mayar-tui/config.json`.
+`~/.config/mayartui/config.json` (mode `0600`).
 
 ### Environment variables
 
@@ -88,7 +109,7 @@ one at <https://web.mayar.id/api-keys>. The key is stored at
 
 ## Programmatic use
 
-`mayar-tui` also exposes a small library surface — useful if you want to
+`mayartui` also exposes a small library surface — useful if you want to
 embed the API client or mount the TUI inside another OpenTUI app:
 
 ```ts
@@ -97,7 +118,7 @@ import {
   MayarApp,
   THEMES,
   SPINNERS,
-} from "mayar-tui";
+} from "mayartui";
 
 const client = new MayarClient({
   apiKey: process.env.MAYAR_API_KEY!,

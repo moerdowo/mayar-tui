@@ -2,6 +2,6 @@
 import { main } from "../dist/index.js";
 
 main().catch((err) => {
-  console.error("mayar-tui crashed:", err);
+  console.error("mayartui crashed:", err);
   process.exit(1);
 });

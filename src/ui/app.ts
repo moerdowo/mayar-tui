@@ -180,7 +180,7 @@ export class MayarApp {
       border: true,
       borderColor: t.border,
       borderStyle: "rounded",
-      title: " mayar-tui ",
+      title: " mayartui ",
       titleAlignment: "left",
       bottomTitle: ` ${this.envLabel()} `,
       bottomTitleAlignment: "right",

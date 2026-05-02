@@ -25,7 +25,7 @@ export const DEFAULT_CONFIG: AppConfig = {
 export function getConfigPath(): string {
   const xdg = process.env.XDG_CONFIG_HOME;
   const base = xdg && xdg.length > 0 ? xdg : join(homedir(), ".config");
-  return join(base, "mayar-tui", "config.json");
+  return join(base, "mayartui", "config.json");
 }
 
 export function loadConfig(): AppConfig {

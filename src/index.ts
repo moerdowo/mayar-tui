@@ -28,7 +28,7 @@ export async function main(): Promise<void> {
 
 if (import.meta.main) {
   main().catch((err) => {
-    console.error("mayar-tui crashed:", err);
+    console.error("mayartui crashed:", err);
     process.exit(1);
   });
 }

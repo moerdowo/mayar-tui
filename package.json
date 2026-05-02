@@ -1,5 +1,5 @@
 {
-  "name": "mayar-tui",
+  "name": "mayartui",
   "version": "0.1.0",
   "description": "Terminal UI dashboard for the Mayar.id headless API.",
   "type": "module",
@@ -15,7 +15,7 @@
     "indonesia"
   ],
   "bin": {
-    "mayar-tui": "./bin/mayar-tui.mjs"
+    "mayartui": "./bin/mayartui.mjs"
   },
   "files": [
     "bin",

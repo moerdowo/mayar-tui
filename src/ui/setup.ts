@@ -64,7 +64,7 @@ export async function runSetup(
       border: true,
       borderColor: t.borderFocused,
       borderStyle: "rounded",
-      title: " welcome to mayar-tui ",
+      title: " welcome to mayartui ",
       titleAlignment: "center",
       bottomTitle: " setup ",
       bottomTitleAlignment: "right",
