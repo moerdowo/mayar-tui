@@ -1,0 +1,66 @@
+{
+  "name": "mayar-tui",
+  "version": "0.1.0",
+  "description": "Terminal UI dashboard for the Mayar.id headless API.",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "mayar",
+    "tui",
+    "terminal",
+    "dashboard",
+    "opentui",
+    "cli",
+    "fintech",
+    "indonesia"
+  ],
+  "bin": {
+    "mayar-tui": "./bin/mayar-tui.mjs"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "start": "bun run src/index.ts",
+    "build": "bun build src/index.ts --target=bun --outdir=dist --format=esm && bun run build:types",
+    "build:types": "tsc --emitDeclarationOnly --outDir dist",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "dependencies": {
+    "@opentui/core": "^0.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "bun-types": "1.3.13",
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "bun": ">=1.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moerdowo/mayar-tui.git"
+  },
+  "bugs": {
+    "url": "https://github.com/moerdowo/mayar-tui/issues"
+  },
+  "homepage": "https://github.com/moerdowo/mayar-tui#readme",
+  "author": "moerdowo",
+  "publishConfig": {
+    "access": "public"
+  }
+}
