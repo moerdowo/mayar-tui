@@ -1,8 +1,7 @@
 # mayar-tui
 
 A terminal UI dashboard for the [Mayar.id](https://mayar.id) headless API.
-Built with [OpenTUI](https://opentui.com) on Bun, written in TypeScript, ready
-to publish as an npm package.
+Built with [OpenTUI](https://opentui.com) on Bun, written in TypeScript.
 
 ```
 ┌── mayar-tui ──────────────────────────────────────────────────┐
