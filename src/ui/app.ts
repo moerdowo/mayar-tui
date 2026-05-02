@@ -186,31 +186,13 @@ export class MayarApp {
       bottomTitleAlignment: "right",
     });
 
-    // Left side: ASCII MAYAR logo, vertically centred.
+    // Left side: live clock at the top-left, MAYAR ASCII logo below.
     const logoBox = new BoxRenderable(ctx, {
       flexGrow: 1,
       flexDirection: "column",
-      justifyContent: "center",
-      backgroundColor: t.panel,
-    });
-    const logoText = new TextRenderable(ctx, {
-      content: MAYAR_LOGO.join("\n"),
-      fg: t.accent,
-    });
-    logoBox.add(logoText);
-
-    // Right side: clock + live dot at top, BALANCE label (inverse style),
-    // big ASCII number, then small active/pending sub-line.
-    const balanceBox = new BoxRenderable(ctx, {
-      flexShrink: 0,
-      flexDirection: "column",
-      alignItems: "flex-end",
       justifyContent: "flex-start",
-      paddingX: 1,
-      paddingY: 0,
       backgroundColor: t.panel,
     });
-
     const clockRow = new BoxRenderable(ctx, {
       flexDirection: "row",
       alignItems: "center",
@@ -227,13 +209,30 @@ export class MayarApp {
     });
     clockRow.add(clockText);
     clockRow.add(liveDot);
+    const logoText = new TextRenderable(ctx, {
+      content: MAYAR_LOGO.join("\n"),
+      fg: t.accent,
+      marginTop: 1,
+    });
+    logoBox.add(clockRow);
+    logoBox.add(logoText);
 
+    // Right side: BALANCE label (inverse style), big ASCII number,
+    // then small active/pending sub-line.
+    const balanceBox = new BoxRenderable(ctx, {
+      flexShrink: 0,
+      flexDirection: "column",
+      alignItems: "flex-end",
+      justifyContent: "center",
+      paddingX: 1,
+      paddingY: 0,
+      backgroundColor: t.panel,
+    });
     const balanceLabel = new TextRenderable(ctx, {
       content: this.balanceLabelText(),
       // Inverse / negative style: panel-colored text on accent background.
       fg: t.background,
       bg: t.fg,
-      marginTop: 1,
       marginBottom: 1,
     });
     const balanceBig = new ASCIIFontRenderable(ctx, {
@@ -248,7 +247,6 @@ export class MayarApp {
       fg: t.fgMuted,
       marginTop: 1,
     });
-    balanceBox.add(clockRow);
     balanceBox.add(balanceLabel);
     balanceBox.add(balanceBig);
     balanceBox.add(balanceSub);
