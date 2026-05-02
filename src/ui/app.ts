@@ -43,6 +43,7 @@ interface Refs {
   headerBox: BoxRenderable;
   logoText: TextRenderable;
   clockText: TextRenderable;
+  liveDot: TextRenderable;
   balanceLabel: TextRenderable;
   balanceBig: ASCIIFontRenderable;
   balanceSub: TextRenderable;
@@ -70,6 +71,8 @@ export class MayarApp {
   private menuSelected = true;
   private statusTimer: ReturnType<typeof setTimeout> | null = null;
   private clockTimer: ReturnType<typeof setInterval> | null = null;
+  private blinkTimer: ReturnType<typeof setInterval> | null = null;
+  private liveDotOn = true;
 
   constructor(renderer: CliRenderer, config: AppConfig) {
     this.renderer = renderer;
@@ -98,6 +101,7 @@ export class MayarApp {
     this.renderer.setBackgroundColor(this.state.theme.background);
     this.renderer.keyInput.on("keypress", this.handleKey);
     this.startClock();
+    this.startBlink();
     void this.refreshBalance();
     void this.loadCurrent();
   }
@@ -114,6 +118,22 @@ export class MayarApp {
     if (this.clockTimer) {
       clearInterval(this.clockTimer);
       this.clockTimer = null;
+    }
+  }
+
+  private startBlink(): void {
+    if (this.blinkTimer) return;
+    this.blinkTimer = setInterval(() => {
+      if (!this.refs) return;
+      this.liveDotOn = !this.liveDotOn;
+      this.refs.liveDot.fg = this.liveDotOn ? this.state.theme.positive : this.state.theme.panel;
+    }, 600);
+  }
+
+  private stopBlink(): void {
+    if (this.blinkTimer) {
+      clearInterval(this.blinkTimer);
+      this.blinkTimer = null;
     }
   }
 
@@ -152,7 +172,7 @@ export class MayarApp {
 
     // ── header ─────────────────────────────────────────────
     const headerBox = new BoxRenderable(ctx, {
-      height: 9,
+      height: 11,
       flexDirection: "row",
       padding: 1,
       gap: 2,
@@ -165,6 +185,8 @@ export class MayarApp {
       bottomTitle: ` ${this.envLabel()} `,
       bottomTitleAlignment: "right",
     });
+
+    // Left side: ASCII MAYAR logo, vertically centred.
     const logoBox = new BoxRenderable(ctx, {
       flexGrow: 1,
       flexDirection: "column",
@@ -175,26 +197,43 @@ export class MayarApp {
       content: MAYAR_LOGO.join("\n"),
       fg: t.accent,
     });
-    const clockText = new TextRenderable(ctx, {
-      content: this.clockNowText(),
-      fg: t.fgSubtle,
-      marginTop: 1,
-    });
     logoBox.add(logoText);
-    logoBox.add(clockText);
 
+    // Right side: clock + live dot at top, BALANCE label (inverse style),
+    // big ASCII number, then small active/pending sub-line.
     const balanceBox = new BoxRenderable(ctx, {
       flexShrink: 0,
       flexDirection: "column",
       alignItems: "flex-end",
-      justifyContent: "center",
+      justifyContent: "flex-start",
       paddingX: 1,
       paddingY: 0,
       backgroundColor: t.panel,
     });
+
+    const clockRow = new BoxRenderable(ctx, {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 1,
+      backgroundColor: t.panel,
+    });
+    const clockText = new TextRenderable(ctx, {
+      content: this.clockNowText(),
+      fg: t.fgSubtle,
+    });
+    const liveDot = new TextRenderable(ctx, {
+      content: "●",
+      fg: t.positive,
+    });
+    clockRow.add(clockText);
+    clockRow.add(liveDot);
+
     const balanceLabel = new TextRenderable(ctx, {
       content: this.balanceLabelText(),
-      fg: t.fgSubtle,
+      // Inverse / negative style: panel-colored text on accent background.
+      fg: t.background,
+      bg: t.fg,
+      marginTop: 1,
     });
     const balanceBig = new ASCIIFontRenderable(ctx, {
       text: this.balanceBigText(),
@@ -208,6 +247,7 @@ export class MayarApp {
       fg: t.fgMuted,
       marginTop: 1,
     });
+    balanceBox.add(clockRow);
     balanceBox.add(balanceLabel);
     balanceBox.add(balanceBig);
     balanceBox.add(balanceSub);
@@ -340,6 +380,7 @@ export class MayarApp {
       headerBox,
       logoText,
       clockText,
+      liveDot,
       balanceLabel,
       balanceBig,
       balanceSub,
@@ -396,7 +437,9 @@ export class MayarApp {
 
     r.logoText.fg = t.accent;
     r.clockText.fg = t.fgSubtle;
-    r.balanceLabel.fg = t.fgSubtle;
+    r.liveDot.fg = this.liveDotOn ? t.positive : t.panel;
+    r.balanceLabel.fg = t.background;
+    r.balanceLabel.bg = t.fg;
     r.balanceBig.color = this.state.balanceError ? t.negative : t.positive;
     r.balanceBig.backgroundColor = t.panel;
     r.balanceSub.fg = t.fgMuted;
@@ -436,8 +479,8 @@ export class MayarApp {
   }
 
   private balanceLabelText(): string {
-    if (this.state.balanceError) return `BALANCE · ${this.state.balanceError}`;
-    return "BALANCE";
+    if (this.state.balanceError) return ` BALANCE · ${this.state.balanceError} `;
+    return " BALANCE ";
   }
 
   private balanceBigText(): string {
@@ -485,7 +528,9 @@ export class MayarApp {
     if (!this.refs) return;
     const t = this.state.theme;
     this.refs.balanceLabel.content = this.balanceLabelText();
-    this.refs.balanceLabel.fg = this.state.balanceError ? t.negative : t.fgSubtle;
+    // Inverse style: panel-colored text on a solid color band.
+    this.refs.balanceLabel.fg = t.background;
+    this.refs.balanceLabel.bg = this.state.balanceError ? t.negative : t.fg;
     this.refs.balanceBig.text = this.balanceBigText();
     this.refs.balanceBig.color = this.state.balanceError ? t.negative : t.positive;
     this.refs.balanceBig.backgroundColor = t.panel;
@@ -969,6 +1014,7 @@ export class MayarApp {
   private shutdown(): void {
     this.spinner.stop();
     this.stopClock();
+    this.stopBlink();
     this.renderer.destroy();
     process.exit(0);
   }
