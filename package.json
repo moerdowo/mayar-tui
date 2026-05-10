@@ -1,6 +1,6 @@
 {
   "name": "mayartui",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Terminal UI dashboard for the Mayar.id headless API.",
   "type": "module",
   "license": "MIT",

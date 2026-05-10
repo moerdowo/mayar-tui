@@ -92,7 +92,7 @@ export class MayarClient {
           Authorization: `Bearer ${this.apiKey}`,
           "Content-Type": "application/json",
           Accept: "application/json",
-          "User-Agent": "mayartui/0.1.0",
+          "User-Agent": "mayartui/0.2.0",
         },
         body: init?.body ? JSON.stringify(init.body) : undefined,
         signal: controller.signal,
