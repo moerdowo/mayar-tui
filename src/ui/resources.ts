@@ -4,6 +4,7 @@ import type {
   InvoiceData,
   PaymentData,
   ProductData,
+  ReviewData,
   TransactionData,
 } from "../api/types.js";
 import {
@@ -429,6 +430,98 @@ function customerDetail(row: ResourceRow): DetailField[] {
   return buildDetail(curated, cu);
 }
 
+// ── Reviews ───────────────────────────────────────────────────────────────
+
+const REVIEW_NAME_KEYS = ["customer.name", "customerName", "name"];
+const REVIEW_PRODUCT_KEYS = [
+  "paymentLink.name",
+  "payment_link.name",
+  "paymentLinkName",
+  "payment_link_name",
+  "paymentLink.title",
+];
+const REVIEW_PRODUCT_TYPE_KEYS = [
+  "paymentLink.type",
+  "payment_link.type",
+  "paymentLinkType",
+];
+const REVIEW_PRODUCT_LINK_KEYS = ["paymentLink.link", "payment_link.link"];
+const REVIEW_MSG_KEYS = ["message", "comment", "review", "text"];
+
+/** Render a numeric rating 0..5 as a star bar like "★★★★☆". */
+function ratingStars(rating: number | undefined): string {
+  if (rating === undefined || Number.isNaN(rating)) return "—";
+  const r = Math.max(0, Math.min(5, Math.round(rating)));
+  return "★".repeat(r) + "☆".repeat(5 - r);
+}
+
+function reviewRow(rev: ReviewData, i: number): ResourceRow {
+  const customer =
+    pickString(rev, ...REVIEW_NAME_KEYS) ?? "(unknown reviewer)";
+  const rating = pickNumber(rev, "rating");
+  const message = pickString(rev, ...REVIEW_MSG_KEYS) ?? "";
+  const id = pickString(rev, ...TX_ID_KEYS) ?? String(i);
+  return {
+    id,
+    primary: customer,
+    secondary: ratingStars(rating),
+    meta: truncate(message.replace(/\s+/g, " ").trim(), 60) || "(no message)",
+    raw: rev,
+  };
+}
+
+function reviewDetail(row: ResourceRow): DetailField[] {
+  const r = row.raw;
+  const rating = pickNumber(r, "rating");
+  const status = pickString(r, "status");
+  const message = pickString(r, ...REVIEW_MSG_KEYS) ?? "";
+  const curated: DetailField[] = [
+    { label: "ID", value: pickString(r, ...TX_ID_KEYS) ?? "-", tone: "muted" },
+    {
+      label: "Rating",
+      value:
+        rating === undefined
+          ? "—"
+          : `${ratingStars(rating)}   ${rating} / 5`,
+      tone: "accent",
+    },
+    {
+      label: "Status",
+      value: status ?? "-",
+      tone: status && /active|approved|published/i.test(status) ? "positive" : "muted",
+    },
+    { label: "Customer", value: pickString(r, ...REVIEW_NAME_KEYS) ?? "-" },
+    {
+      label: "Customer ID",
+      value: pickString(r, "customer.id", "customerId") ?? "-",
+      tone: "muted",
+    },
+    { label: "Product", value: pickString(r, ...REVIEW_PRODUCT_KEYS) ?? "-" },
+    {
+      label: "Product Type",
+      value: pickString(r, ...REVIEW_PRODUCT_TYPE_KEYS) ?? "-",
+      tone: "muted",
+    },
+    {
+      label: "Product Link",
+      value: pickString(r, ...REVIEW_PRODUCT_LINK_KEYS) ?? "-",
+      tone: "muted",
+    },
+    { label: "Message", value: truncate(message, 800) || "(no message)" },
+    {
+      label: "Created",
+      value: formatWhen(pickString(r, "createdAt", "created_at") ?? null),
+      tone: "muted",
+    },
+    {
+      label: "Updated",
+      value: formatWhen(pickString(r, "updatedAt", "updated_at") ?? null),
+      tone: "muted",
+    },
+  ];
+  return buildDetail(curated, r);
+}
+
 // ── Column definitions ────────────────────────────────────────────────────
 
 function statusTone(value: string | undefined, positive: RegExp): CellTone | undefined {
@@ -604,6 +697,44 @@ const CUSTOMER_COLUMNS: ResourceColumn[] = [
   },
 ];
 
+const REVIEW_COLUMNS: ResourceColumn[] = [
+  {
+    key: "rating",
+    label: "Rating",
+    width: 8,
+    get: (r) => ratingStars(pickNumber(r, "rating")),
+    tone: (r) => {
+      const n = pickNumber(r, "rating") ?? 0;
+      if (n >= 4) return "positive";
+      if (n >= 3) return "warning";
+      if (n > 0) return "negative";
+      return "muted";
+    },
+  },
+  {
+    key: "customer",
+    label: "Customer",
+    width: 18,
+    get: (r) => pickString(r, ...REVIEW_NAME_KEYS) ?? "-",
+  },
+  {
+    key: "message",
+    label: "Message",
+    width: "flex",
+    get: (r) => {
+      const m = pickString(r, ...REVIEW_MSG_KEYS) ?? "";
+      return m.replace(/\s+/g, " ").trim() || "(no message)";
+    },
+  },
+  {
+    key: "date",
+    label: "When",
+    width: 12,
+    get: (r) => formatWhenShort(pickString(r, "createdAt", "created_at") ?? null),
+    tone: () => "muted",
+  },
+];
+
 // ── Registry ──────────────────────────────────────────────────────────────
 
 export const RESOURCES: ResourceDef[] = [
@@ -684,5 +815,18 @@ export const RESOURCES: ResourceDef[] = [
     },
     detail: customerDetail,
     columns: CUSTOMER_COLUMNS,
+  },
+  {
+    id: "reviews",
+    name: "Reviews",
+    description: "Customer reviews & ratings",
+    hotkey: "7",
+    fetch: async (c, q) => {
+      const res = await c.reviews(q);
+      const items = asArray<ReviewData>(res.data);
+      return { rows: items.map(reviewRow), total: res.pagination?.total };
+    },
+    detail: reviewDetail,
+    columns: REVIEW_COLUMNS,
   },
 ];

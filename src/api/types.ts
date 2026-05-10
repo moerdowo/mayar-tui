@@ -84,4 +84,20 @@ export interface TransactionData {
   merchantName?: string;
 }
 
+export interface ReviewData {
+  id?: string;
+  customerId?: string;
+  userId?: string;
+  paymentLinkId?: string;
+  rating?: number;
+  message?: string;
+  status?: string;
+  createdAt?: string | number;
+  updatedAt?: string | number;
+  multipleImage?: unknown[];
+  content?: unknown[];
+  customer?: { id?: string; name?: string };
+  paymentLink?: { id?: string; name?: string; type?: string; link?: string; subType?: string };
+}
+
 export type AnyRecord = Record<string, unknown>;

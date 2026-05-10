@@ -6,6 +6,7 @@ import type {
   MayarEnvelope,
   PaymentData,
   ProductData,
+  ReviewData,
   TransactionData,
 } from "./types.js";
 
@@ -162,6 +163,12 @@ export class MayarClient {
   singlePayments(q: PageQuery & { sort?: string } = {}) {
     return this.request<PaymentData[]>("GET", "/payment", {
       query: { ...paging(q), sort: q.sort },
+    });
+  }
+
+  reviews(q: PageQuery = {}) {
+    return this.request<ReviewData[]>("GET", "/reviews", {
+      query: paging(q),
     });
   }
 }

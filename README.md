@@ -30,7 +30,7 @@ Built with [OpenTUI](https://opentui.com) on Bun, written in TypeScript.
 - Live clock with blinking indicator and a chunky ASCII balance widget
   in the header.
 - Resources: paid transactions, unpaid transactions, invoices, single
-  payments, products, customers.
+  payments, products, customers, **reviews** (with star ratings).
 - Theme switcher: Matrix, **Mayar** (brand light theme), Tokyo Night,
   Goblin Mode, Dracula, Synthwave, Nord, Rosé Pine.
 - Configurable loading spinner (dots, line, arrow, pulse, matrix, bounce)
@@ -100,7 +100,7 @@ one at <https://web.mayar.id/api-keys>. The key is stored at
 | `↑` / `↓`       | Move within the focused list             |
 | `Tab` / `S-Tab` | Cycle focus between menu / list / detail |
 | `Enter`         | Confirm menu selection                   |
-| `1`–`6`         | Jump straight to a resource              |
+| `1`–`7`         | Jump straight to a resource              |
 | `←` / `→`       | Previous / next page                     |
 | `r`             | Reload current resource and balance      |
 | `s`             | Open the settings overlay                |
@@ -144,6 +144,7 @@ All endpoints are documented at <https://docs.mayar.id>. The base URL is
 | `GET`  | `/payment`                 | single payment requests |
 | `GET`  | `/product`                 | products                |
 | `GET`  | `/customer`                | customers               |
+| `GET`  | `/reviews`                 | customer reviews        |
 
 ## Development
 

@@ -37,11 +37,41 @@ const YEAR = 365 * DAY;
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
-/** Compact human date, e.g. "12 May 14:30" (current year) or "12 May 2025 14:30". */
-export function formatDateShort(input?: string | null, now: Date = new Date()): string {
-  if (!input) return "-";
+export type DateInput = string | number | Date | null | undefined;
+
+/**
+ * Coerce one of (ISO string | Unix seconds | Unix milliseconds | Date) into a
+ * valid Date. Returns null on empty / invalid input.
+ *
+ * Mayar's `/reviews` endpoint returns timestamps as Unix milliseconds, while
+ * other endpoints use ISO 8601. We accept both transparently.
+ */
+function toDate(input: DateInput): Date | null {
+  if (input === null || input === undefined || input === "") return null;
+  if (input instanceof Date) {
+    return Number.isNaN(input.getTime()) ? null : input;
+  }
+  if (typeof input === "number") {
+    // Heuristic: < 1e12 → Unix seconds; >= 1e12 → Unix milliseconds.
+    const ms = input < 1e12 ? input * 1000 : input;
+    const d = new Date(ms);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+  // String: numeric all-digits → treat as a timestamp; otherwise ISO.
+  if (/^\d{10,16}$/.test(input)) {
+    const num = Number(input);
+    const ms = num < 1e12 ? num * 1000 : num;
+    const d = new Date(ms);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
   const d = new Date(input);
-  if (Number.isNaN(d.getTime())) return input;
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+/** Compact human date, e.g. "12 May 14:30" (current year) or "12 May 2025 14:30". */
+export function formatDateShort(input: DateInput, now: Date = new Date()): string {
+  const d = toDate(input);
+  if (!d) return input == null || input === "" ? "-" : String(input);
   const day = d.getDate();
   const month = MONTHS_SHORT[d.getMonth()]!;
   const year = d.getFullYear();
@@ -51,10 +81,9 @@ export function formatDateShort(input?: string | null, now: Date = new Date()): 
 }
 
 /** Long human date, e.g. "12 May 2026, 14:30". */
-export function formatDate(input?: string | null): string {
-  if (!input) return "-";
-  const d = new Date(input);
-  if (Number.isNaN(d.getTime())) return input;
+export function formatDate(input: DateInput): string {
+  const d = toDate(input);
+  if (!d) return input == null || input === "" ? "-" : String(input);
   const day = d.getDate();
   const month = MONTHS_SHORT[d.getMonth()]!;
   const year = d.getFullYear();
@@ -63,10 +92,9 @@ export function formatDate(input?: string | null): string {
 }
 
 /** Long, locale-aware relative time: "5 minutes ago", "yesterday", "in 3 days". */
-export function formatRelative(input?: string | null, now: Date = new Date()): string {
-  if (!input) return "-";
-  const d = new Date(input);
-  if (Number.isNaN(d.getTime())) return input;
+export function formatRelative(input: DateInput, now: Date = new Date()): string {
+  const d = toDate(input);
+  if (!d) return input == null || input === "" ? "-" : String(input);
   const diffMs = d.getTime() - now.getTime();
   const abs = Math.abs(diffMs);
 
@@ -93,23 +121,21 @@ export function formatRelative(input?: string | null, now: Date = new Date()): s
  *  - Recent (< 7 days): show relative ("5m ago", "2h ago", "yesterday")
  *  - Older: show absolute ("12 May 14:30")
  */
-export function formatWhenShort(input?: string | null, now: Date = new Date()): string {
-  if (!input) return "-";
-  const d = new Date(input);
-  if (Number.isNaN(d.getTime())) return input;
+export function formatWhenShort(input: DateInput, now: Date = new Date()): string {
+  const d = toDate(input);
+  if (!d) return input == null || input === "" ? "-" : String(input);
   const abs = Math.abs(now.getTime() - d.getTime());
-  if (abs < WEEK) return formatRelative(input, now);
-  return formatDateShort(input, now);
+  if (abs < WEEK) return formatRelative(d, now);
+  return formatDateShort(d, now);
 }
 
 /** Long form for the detail panel: "12 May 2026, 14:30 · 5 minutes ago". */
-export function formatWhen(input?: string | null, now: Date = new Date()): string {
-  if (!input) return "-";
-  const d = new Date(input);
-  if (Number.isNaN(d.getTime())) return input;
-  const absStr = formatDate(input);
-  const rel = formatRelative(input, now);
-  if (rel === absStr || rel === input) return absStr;
+export function formatWhen(input: DateInput, now: Date = new Date()): string {
+  const d = toDate(input);
+  if (!d) return input == null || input === "" ? "-" : String(input);
+  const absStr = formatDate(d);
+  const rel = formatRelative(d, now);
+  if (rel === absStr) return absStr;
   return `${absStr}  ·  ${rel}`;
 }
 
